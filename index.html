@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kevin's LEGO Collection</title>
+  <link rel="icon" href="favicon.ico">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0 14px 40px;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      color: #111;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08)),
+        url("https://images.pexels.com/photos/1323712/pexels-photo-1323712.jpeg?auto=compress&cs=tinysrgb&w=1600");
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: clamp(38px, 6vw, 60px);
+      border-bottom: 2px solid black;
+      margin: 10px auto;
+      max-width: 800px;
+    }
+
+    h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      border-bottom: 2px solid black;
+      margin: 2px 0 8px;
+    }
+
+    .timestamp {
+      position: fixed;
+      top: 3px;
+      right: 5px;
+      z-index: 20;
+      font-size: 13px;
+      font-weight: bold;
+      background: rgba(255,255,255,0.8);
+      border-radius: 5px;
+      padding: 3px 6px;
+    }
+
+    .sort-buttons {
+      margin: 0 auto 8px;
+      max-width: 900px;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .sort-button {
+      margin: 5px;
+      padding: 7px 11px;
+      font-size: 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .sort-button:hover,
+    .sort-button.active {
+      background-color: #218838;
+    }
+
+    .sort-button.up::after { content: " ▲"; }
+    .sort-button.down::after { content: " ▼"; }
+
+    .view-container {
+      margin: 8px 0;
+    }
+
+    .view-toggle-button {
+      padding: 10px;
+      font-size: 16px;
+      background-color: #ffc107;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .view-toggle-button:hover {
+      background-color: #e0a800;
+    }
+
+    #lego-sets {
+      list-style: none;
+      padding: 0;
+      margin: 0 auto;
+    }
+
+    .lego-set {
+      padding: 10px;
+      border: 2px solid black;
+      border-radius: 10px;
+      background-color: rgba(255,255,255,0.86);
+      overflow: hidden;
+    }
+
+    .lego-set img {
+      max-width: 100%;
+      height: auto;
+      border: 4px solid black;
+      background: white;
+    }
+
+    .set-info {
+      border-top: 2px solid black;
+      padding-top: 10px;
+      margin-top: 10px;
+      line-height: 1.25;
+    }
+
+    .set-name {
+      font-weight: bold;
+    }
+
+    .list-view .lego-set {
+      max-width: 600px;
+      margin: 8px auto 14px;
+      font-size: clamp(25px, 4vw, 50px);
+    }
+
+    .list-view .set-info {
+      font-size: 0.52em;
+    }
+
+    .grid-view {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      max-width: 1500px;
+    }
+
+    .grid-view .lego-set {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .grid-view .lego-set img {
+      max-height: 260px;
+      object-fit: contain;
+    }
+
+    .collection-details {
+      font-size: 22px;
+      max-width: 760px;
+      padding: 10px;
+      background-color: rgba(255,255,255,0.82);
+      border-radius: 10px;
+      margin: 12px auto;
+      border: 2px solid black;
+    }
+
+    .collection-details > div {
+      margin: 7px 0;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .grid-item {
+      background-color: rgba(125,150,190,0.2);
+      border: 2px solid black;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .section-header {
+      font-weight: bold;
+      margin-bottom: 7px;
+      text-decoration: underline;
+    }
+
+    .hidden { display: none; }
+
+    #msrpButton {
+      margin-left: 7px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .custom-alert {
+      display: none;
+      max-width: 700px;
+      margin: 10px auto;
+      padding: 12px;
+      background: rgba(255,255,255,0.9);
+      border: 2px solid #a00;
+      border-radius: 8px;
+      color: #a00;
+      font-weight: bold;
+    }
+
+    .loading {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      border: 2px solid black;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.86);
+      font-size: 22px;
+    }
+
+    .scroll-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 20;
+    }
+
+    #scrollToBottomButton {
+      padding: 10px 16px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #scrollToBottomButton:hover {
+      background-color: #0056b3;
+    }
+
+    @media (max-width: 900px) {
+      .grid-view {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .timestamp {
+        position: static;
+        display: inline-block;
+        margin-bottom: 5px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body { padding-left: 8px; padding-right: 8px; }
+      .grid-view { grid-template-columns: 1fr; }
+      .details-grid { grid-template-columns: 1fr; }
+      .scroll-container { bottom: 10px; right: 10px; }
+      .sort-button { font-size: 14px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="customAlert" class="custom-alert"></div>
+
+  <h1>Kevin's Collection</h1>
+
+  <div class="timestamp" id="timestamp">Collection data: loading…</div>
+
+  <div class="sort-buttons">
+    <button id="name-sort" class="sort-button" onclick="sortSets('name')">Sort by Name</button>
+    <button id="pieces-sort" class="sort-button" onclick="sortSets('pieces')">Sort by Pieces</button>
+    <button id="price-sort" class="sort-button" onclick="sortSets('price')">Sort by Price</button>
+    <button id="release-sort" class="sort-button" onclick="sortSets('release')">Sort by Release Date</button>
+    <button id="theme-sort" class="sort-button" onclick="sortSets('theme')">Sort by LEGO Theme</button>
+  </div>
+
+  <div class="view-container">
+    <button id="view-toggle-button" class="view-toggle-button" onclick="toggleView()">Switch to Grid View</button>
+  </div>
+
+  <div class="scroll-container">
+    <button id="scrollToBottomButton">Scroll to Bottom</button>
+  </div>
+
+  <div id="loading" class="loading">Loading LEGO collection…</div>
+  <ul id="lego-sets" class="list-view"></ul>
+
+  <section id="collection-details" class="collection-details hidden">
+    <h2>Collection Details:</h2>
+    <div id="total-sets"></div>
+    <div id="total-pieces"></div>
+    <div id="total-msrp">
+      Total MSRP of Collection: $
+      <span id="msrpValue" class="hidden"></span>
+      <button id="msrpButton" onclick="toggleMSRP()">Click to Unhide</button>
+    </div>
+
+    <div class="details-grid">
+      <div class="grid-item">
+        <div class="section-header">Owned Sets Released in:</div>
+        <div id="release-years"></div>
+      </div>
+
+      <div class="grid-item">
+        <div class="section-header">Owned Sets by Theme:</div>
+        <div id="themes"></div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const DATA_FILE = "ownedsetscache.json";
+
+    let collectionSets = [];
+    let activeSortKey = null;
+
+    const sortDirection = {
+      name: "asc",
+      pieces: "asc",
+      price: "asc",
+      release: "asc",
+      theme: "asc"
+    };
+
+    const numberFormatter = new Intl.NumberFormat("en-US");
+    const moneyFormatter = new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    function getUSRetailPrice(set) {
+      return Number(set?.LEGOCom?.US?.retailPrice ?? 0);
+    }
+
+    function getQuantityOwned(set) {
+      const qty = Number(set?.collection?.qtyOwned ?? 1);
+      return Number.isFinite(qty) && qty > 0 ? qty : 1;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function loadCollection() {
+      try {
+        const response = await fetch(DATA_FILE, { cache: "no-cache" });
+
+        if (!response.ok) {
+          throw new Error(`Could not load ${DATA_FILE} (HTTP ${response.status})`);
+        }
+
+        const lastModified = response.headers.get("Last-Modified");
+        const data = await response.json();
+
+        if (!data || !Array.isArray(data.sets)) {
+          throw new Error(`${DATA_FILE} does not contain a valid "sets" array.`);
+        }
+
+        collectionSets = data.sets;
+
+        renderSets(collectionSets);
+        renderCollectionDetails(collectionSets);
+        updateTimestamp(lastModified);
+
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("collection-details").classList.remove("hidden");
+      } catch (error) {
+        console.error(error);
+        document.getElementById("loading").classList.add("hidden");
+        displayError(
+          "Failed to load the LEGO collection."
+        );
+      }
+    }
+
+    function renderSets(sets) {
+      const list = document.getElementById("lego-sets");
+      list.innerHTML = "";
+
+      sets.forEach(set => {
+        const price = getUSRetailPrice(set);
+        const pieces = Number(set.pieces ?? 0);
+        const year = Number(set.year ?? 0);
+        const theme = set.theme ?? "Unknown";
+        const name = set.name ?? "Unnamed Set";
+        const imageURL = set?.image?.thumbnailURL || set?.image?.imageURL || "";
+        const bricksetURL = set.bricksetURL || "";
+
+        const item = document.createElement("li");
+        item.className = "lego-set";
+        item.dataset.name = name.toLowerCase();
+        item.dataset.pieces = pieces;
+        item.dataset.price = price;
+        item.dataset.release = year;
+        item.dataset.theme = theme.toLowerCase();
+
+        const imageHtml = imageURL
+          ? `<img src="${escapeHtml(imageURL)}" alt="${escapeHtml(name)}" loading="lazy">`
+          : `<span>No Image Available</span>`;
+
+        const nameHtml = bricksetURL
+          ? `<a href="${escapeHtml(bricksetURL)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>`
+          : escapeHtml(name);
+
+        item.innerHTML = `
+          ${imageHtml}
+          <div class="set-info">
+            <div class="set-name">${nameHtml}</div>
+            Set Number: ${escapeHtml(set.number)}-${escapeHtml(set.numberVariant ?? 1)}<br>
+            Pieces: ${numberFormatter.format(pieces)}<br>
+            US MSRP: $${moneyFormatter.format(price)}<br>
+            Release Date: ${escapeHtml(year)}<br>
+            Theme: ${escapeHtml(theme)}
+          </div>
+        `;
+
+        list.appendChild(item);
+      });
+    }
+
+    function renderCollectionDetails(sets) {
+      let totalSets = 0;
+      let totalPieces = 0;
+      let totalMSRP = 0;
+      const releaseYears = {};
+      const themes = {};
+
+      sets.forEach(set => {
+        const qty = getQuantityOwned(set);
+        const pieces = Number(set.pieces ?? 0);
+        const price = getUSRetailPrice(set);
+        const year = String(set.year ?? "Unknown");
+        const theme = set.theme ?? "Unknown";
+
+        totalSets += qty;
+        totalPieces += pieces * qty;
+        totalMSRP += price * qty;
+
+        releaseYears[year] = (releaseYears[year] || 0) + qty;
+        themes[theme] = (themes[theme] || 0) + qty;
+      });
+
+      document.getElementById("total-sets").textContent =
+        `Total Sets Owned: ${numberFormatter.format(totalSets)}`;
+
+      document.getElementById("total-pieces").textContent =
+        `Total Pieces in Collection: ${numberFormatter.format(totalPieces)}`;
+
+      document.getElementById("msrpValue").textContent =
+        moneyFormatter.format(totalMSRP);
+
+      const yearsContainer = document.getElementById("release-years");
+      yearsContainer.innerHTML = Object.entries(releaseYears)
+        .sort((a, b) => Number(b[0]) - Number(a[0]))
+        .map(([year, count]) => `<div>${escapeHtml(year)}: ${numberFormatter.format(count)}</div>`)
+        .join("");
+
+      const themesContainer = document.getElementById("themes");
+      themesContainer.innerHTML = Object.entries(themes)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([theme, count]) => `<div>${escapeHtml(theme)}: ${numberFormatter.format(count)}</div>`)
+        .join("");
+    }
+
+    function sortSets(key) {
+      if (activeSortKey === key) {
+        sortDirection[key] = sortDirection[key] === "asc" ? "desc" : "asc";
+      } else {
+        activeSortKey = key;
+        Object.keys(sortDirection).forEach(k => {
+          if (k !== key) sortDirection[k] = "asc";
+        });
+      }
+
+      document.querySelectorAll(".sort-button").forEach(button => {
+        button.classList.remove("active", "up", "down");
+      });
+
+      const button = document.getElementById(`${key}-sort`);
+      button.classList.add("active");
+      button.classList.add(sortDirection[key] === "asc" ? "up" : "down");
+
+      const list = document.getElementById("lego-sets");
+      const items = Array.from(list.querySelectorAll(".lego-set"));
+
+      items.sort((a, b) => {
+        let aValue = a.dataset[key];
+        let bValue = b.dataset[key];
+
+        if (key === "pieces" || key === "price" || key === "release") {
+          aValue = Number(aValue);
+          bValue = Number(bValue);
+          return sortDirection[key] === "asc" ? aValue - bValue : bValue - aValue;
+        }
+
+        const result = String(aValue).localeCompare(String(bValue));
+        return sortDirection[key] === "asc" ? result : -result;
+      });
+
+      items.forEach(item => list.appendChild(item));
+    }
+
+    function toggleView() {
+      const list = document.getElementById("lego-sets");
+      const button = document.getElementById("view-toggle-button");
+
+      if (list.classList.contains("list-view")) {
+        list.classList.remove("list-view");
+        list.classList.add("grid-view");
+        button.textContent = "Switch to List View";
+      } else {
+        list.classList.remove("grid-view");
+        list.classList.add("list-view");
+        button.textContent = "Switch to Grid View";
+      }
+    }
+
+    function toggleMSRP() {
+      const value = document.getElementById("msrpValue");
+      const button = document.getElementById("msrpButton");
+
+      value.classList.toggle("hidden");
+
+      button.textContent = value.classList.contains("hidden")
+        ? "Click to Unhide"
+        : "Hide! My Wife Is Coming!";
+    }
+
+    function updateTimestamp(lastModified) {
+      const timestamp = document.getElementById("timestamp");
+
+      if (!lastModified) {
+        timestamp.textContent = "Collection data loaded";
+        return;
+      }
+
+      const date = new Date(lastModified);
+
+      if (Number.isNaN(date.getTime())) {
+        timestamp.textContent = "Collection data loaded";
+        return;
+      }
+
+      timestamp.textContent = `Data Timestamp: ${date.toLocaleString()}`;
+    }
+
+    function displayError(message) {
+      const alertBox = document.getElementById("customAlert");
+      alertBox.textContent = message;
+      alertBox.style.display = "block";
+    }
+
+    document.getElementById("scrollToBottomButton").addEventListener("click", () => {
+      const button = document.getElementById("scrollToBottomButton");
+      const nearBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10;
+
+      if (nearBottom) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        button.textContent = "Scroll to Bottom";
+      } else {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+        button.textContent = "Scroll to Top";
+      }
+    });
+
+    loadCollection();
+  </script>
+</body>
+</html>
