@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kevin's LEGO Collection</title>
+  <link rel="icon" href="favicon.ico">
+
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --surface-soft: #f8f9fb;
+      --text: #17191c;
+      --muted: #666d76;
+      --border: #dfe3e8;
+      --accent: #f2c300;
+      --accent-dark: #d4aa00;
+      --dark: #1d232a;
+      --shadow: 0 8px 24px rgba(20, 28, 38, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page-shell {
+      width: min(1500px, calc(100% - 32px));
+      margin: 0 auto;
+      padding-bottom: 48px;
+    }
+
+    .hero {
+      margin-top: 20px;
+      padding: 28px;
+      border-radius: 22px;
+      background: var(--dark);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #d8dde4;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-subtitle {
+      max-width: 650px;
+      margin: 14px 0 0;
+      color: #cbd1d8;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .timestamp {
+      flex: 0 0 auto;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: #d8dde4;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .summary-card {
+      min-width: 0;
+      padding: 16px 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .summary-label {
+      display: block;
+      margin-bottom: 5px;
+      color: #bfc6ce;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .summary-value {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 18px 0;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 3px 12px rgba(20, 28, 38, 0.04);
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .control {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      text-align: left;
+    }
+
+    .control label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    select,
+    .control-button {
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      color: var(--text);
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    select:focus,
+    .control-button:focus-visible {
+      outline: 3px solid rgba(242,195,0,0.35);
+      outline-offset: 2px;
+    }
+
+    .control-button {
+      font-weight: 700;
+    }
+
+    .control-button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #1b1b1b;
+    }
+
+    .control-button.primary:hover {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+    }
+
+    #lego-sets {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .grid-view {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .lego-set {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 3px 14px rgba(20, 28, 38, 0.05);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .lego-set:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px rgba(20, 28, 38, 0.10);
+      }
+    }
+
+    .image-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 250px;
+      padding: 18px;
+      background: var(--surface-soft);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .image-wrap img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .image-placeholder {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .set-info {
+      padding: 16px 16px 17px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .set-meta-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 9px;
+    }
+
+    .theme-pill {
+      overflow: hidden;
+      max-width: 75%;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #eef1f4;
+      color: #515963;
+      font-size: 11px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .year {
+      color: #3f4650;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .set-name {
+      min-height: 48px;
+      margin-bottom: 5px;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .set-name a {
+      text-decoration: none;
+    }
+
+    .set-name a:hover {
+      text-decoration: underline;
+    }
+
+    .set-number {
+      color: #3f4650;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .retirement-status {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      margin-top: 10px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .retirement-status.retiring-soon {
+      border: 1px solid #d6a900;
+      background: #fff4bf;
+      color: #665000;
+    }
+
+    .retirement-status.retired {
+      border: 1px solid #d9a1a1;
+      background: #fff0f0;
+      color: #8b2727;
+    }
+
+    .retirement-status.gwp {
+      border: 1px solid #b6a44b;
+      background: #fff8d6;
+      color: #665a12;
+    }
+
+    .retirement-status.placeholder {
+      visibility: hidden;
+    }
+
+    .retirement-date {
+      margin-top: 5px;
+      color: #555d67;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .set-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 15px;
+    }
+
+    .set-stat {
+      padding: 10px;
+      border-radius: 10px;
+      background: var(--surface-soft);
+    }
+
+    .set-stat-label {
+      display: block;
+      color: #4a515b;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .set-stat-value {
+      display: block;
+      margin-top: 2px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .list-view {
+      display: grid;
+      gap: 12px;
+      width: 100%;
+      max-width: 1050px;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    .list-view .lego-set {
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .list-view .lego-set {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+    }
+
+    .list-view .image-wrap {
+      height: 210px;
+      border-right: 1px solid var(--border);
+      border-bottom: 0;
+    }
+
+    .list-view .set-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .list-view .set-name {
+      min-height: 0;
+      font-size: 24px;
+    }
+
+    .collection-details {
+      margin-top: 24px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+    }
+
+    .collection-details h2 {
+      margin: 0 0 16px;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .grid-item {
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--surface-soft);
+      text-align: left;
+    }
+
+    .section-header {
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .detail-row:last-child {
+      border-bottom: 0;
+    }
+
+    .detail-row strong {
+      color: var(--text);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .loading,
+    .custom-alert {
+      margin: 24px auto;
+      padding: 18px;
+      border-radius: 12px;
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .loading {
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .custom-alert {
+      display: none;
+      border: 1px solid #d98a8a;
+      color: #8b1f1f;
+      background: #fff7f7;
+      font-weight: 700;
+    }
+
+    .scroll-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    .breakdown-jump-top {
+      margin-top: 14px;
+      margin-bottom: -4px;
+    }
+
+    #scrollToBottomButton {
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0 14px;
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .site-footer {
+      margin-top: 28px;
+      padding: 8px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    @media (max-width: 1150px) {
+      .grid-view {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 850px) {
+      .page-shell {
+        width: min(100% - 20px, 1500px);
+      }
+
+      .hero-top {
+        flex-direction: column;
+      }
+
+      .timestamp {
+        white-space: normal;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .toolbar-group {
+        align-items: stretch;
+      }
+
+      .control {
+        flex: 1 1 180px;
+      }
+
+      .grid-view {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .hero {
+        padding: 22px 18px;
+      }
+
+      .grid-view {
+        grid-template-columns: 1fr;
+      }
+
+      .list-view .lego-set {
+        display: block;
+      }
+
+      .list-view .image-wrap {
+        height: 240px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .toolbar-group {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      select,
+      .control-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page-shell">
+    <div id="customAlert" class="custom-alert"></div>
+
+    <header class="hero">
+      <div class="hero-top">
+        <div>
+          <p class="eyebrow">Brickomode</p>
+          <h1>Kevin's LEGO Collection</h1>
+        </div>
+        <div class="timestamp" id="timestamp">Collection data: loading…</div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span class="summary-label">Sets Owned</span>
+          <div class="summary-value" id="summary-sets">—</div>
+        </div>
+
+        <div class="summary-card">
+          <span class="summary-label">Total Pieces</span>
+          <div class="summary-value" id="summary-pieces">—</div>
+        </div>
+
+        <div class="summary-card">
+          <span class="summary-label">Collection MSRP</span>
+          <div class="summary-value" id="summary-msrp">—</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="scroll-container breakdown-jump-top">
+      <button id="scrollToBottomButton" type="button">Jump to Collection Breakdown</button>
+    </div>
+
+    <section class="toolbar" aria-label="Collection controls">
+      <div class="toolbar-group">
+        <div class="control">
+          <label for="sort-select">Sort by</label>
+          <select id="sort-select">
+            <option value="pieces" selected>Pieces</option>
+            <option value="name">Name</option>
+            <option value="price">Price</option>
+            <option value="release">Release Date</option>
+            <option value="theme">LEGO Theme</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label for="status-filter">Status</label>
+          <select id="status-filter">
+            <option value="all" selected>All Sets</option>
+            <option value="active">Active</option>
+            <option value="retiringSoon">Retiring Soon</option>
+            <option value="retired">Retired</option>
+            <option value="giftWithPurchase">Gift With Purchase</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label for="sort-direction-button">Order</label>
+          <button id="sort-direction-button" class="control-button" type="button">High → Low</button>
+        </div>
+
+        <div class="control">
+          <label for="view-toggle-button">Layout</label>
+          <button id="view-toggle-button" class="control-button primary" type="button">Switch to List View</button>
+        </div>
+      </div>
+
+    </section>
+
+    <div id="loading" class="loading">Loading LEGO collection…</div>
+    <ul id="lego-sets" class="grid-view"></ul>
+
+    <section id="collection-details" class="collection-details hidden">
+      <h2>Collection Breakdown</h2>
+
+      <div class="details-grid">
+        <div class="grid-item">
+          <div class="section-header">Sets by Release Year</div>
+          <div id="release-years"></div>
+        </div>
+
+        <div class="grid-item">
+          <div class="section-header">Sets by Theme</div>
+          <div id="themes"></div>
+        </div>
+
+        <div class="grid-item">
+          <div class="section-header">Collection Status</div>
+          <div id="retirement-status"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      LEGO is a trademark of the LEGO Group, which does not sponsor, authorize or endorse this website.
+    </footer>
+  </main>
+
+  <script>
+    const DATA_FILE = "collection.json";
+
+    let collectionSets = [];
+    let activeSortKey = "pieces";
+    let activeSortDirection = "desc";
+    let activeStatusFilter = "all";
+
+    const numberFormatter = new Intl.NumberFormat("en-US");
+    const moneyFormatter = new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    function getUSRetailPrice(set) {
+      const price = Number(set?.price ?? 0);
+      return Number.isFinite(price) && price > 0 ? price : null;
+    }
+
+    function isGiftWithPurchase(set) {
+      return String(set?.availability ?? "").trim().toLowerCase() ===
+        "lego gift with purchase";
+    }
+
+    function formatRetailPrice(set) {
+      if (isGiftWithPurchase(set)) {
+        return "GWP";
+      }
+
+      const price = getUSRetailPrice(set);
+      return price === null ? "N/A" : `$${moneyFormatter.format(price)}`;
+    }
+
+    function getQuantityOwned(set) {
+      const qty = Number(set?.quantityOwned ?? 1);
+      return Number.isFinite(qty) && qty > 0 ? qty : 1;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function loadCollection() {
+      try {
+        const response = await fetch(DATA_FILE, { cache: "no-cache" });
+
+        if (!response.ok) {
+          throw new Error(`Could not load ${DATA_FILE} (HTTP ${response.status})`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !Array.isArray(data.sets)) {
+          throw new Error(`${DATA_FILE} does not contain a valid "sets" array.`);
+        }
+
+        collectionSets = data.sets;
+        sortAndRender();
+        renderCollectionDetails(collectionSets);
+        updateSummary(collectionSets);
+        updateTimestamp(data.updated);
+
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("collection-details").classList.remove("hidden");
+      } catch (error) {
+        console.error(error);
+        document.getElementById("loading").classList.add("hidden");
+        displayError(
+          "Failed to load the LEGO collection. Make sure index.html and collection.json are in the same folder and that you opened the site through a local web server."
+        );
+      }
+    }
+
+    function sortAndRender() {
+      const filteredSets = activeStatusFilter === "all"
+        ? collectionSets
+        : collectionSets.filter(set => {
+            if (activeStatusFilter === "giftWithPurchase") {
+              return isGiftWithPurchase(set);
+            }
+
+            return !isGiftWithPurchase(set) &&
+              getRetirementStatus(set) === activeStatusFilter;
+          });
+
+      const sorted = [...filteredSets].sort((a, b) => {
+        let aValue;
+        let bValue;
+
+        if (activeSortKey === "pieces") {
+          aValue = Number(a.pieces ?? 0);
+          bValue = Number(b.pieces ?? 0);
+        } else if (activeSortKey === "price") {
+          aValue = getUSRetailPrice(a) ?? 0;
+          bValue = getUSRetailPrice(b) ?? 0;
+        } else if (activeSortKey === "release") {
+          aValue = Number(a.year ?? 0);
+          bValue = Number(b.year ?? 0);
+        } else if (activeSortKey === "theme") {
+          aValue = String(a.theme ?? "").toLowerCase();
+          bValue = String(b.theme ?? "").toLowerCase();
+        } else {
+          aValue = String(a.name ?? "").toLowerCase();
+          bValue = String(b.name ?? "").toLowerCase();
+        }
+
+        let result;
+
+        if (typeof aValue === "number" && typeof bValue === "number") {
+          result = aValue - bValue;
+        } else {
+          result = String(aValue).localeCompare(String(bValue));
+        }
+
+        return activeSortDirection === "asc" ? result : -result;
+      });
+
+      renderSets(sorted);
+      updateDirectionButton();
+    }
+
+    function getRetirementStatus(set) {
+      const status = String(set?.retirementStatus ?? "active");
+
+      // Backward compatibility with the immediately previous updater version.
+      if (status === "available") {
+        return "active";
+      }
+
+      return status;
+    }
+
+    function formatRetirementDate(value) {
+      if (!value) {
+        return "";
+      }
+
+      const date = new Date(`${value}T00:00:00`);
+
+      if (Number.isNaN(date.getTime())) {
+        return "";
+      }
+
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
+    }
+
+    function getRetirementHtml(set) {
+      const status = getRetirementStatus(set);
+      const formattedDate = formatRetirementDate(set.exitDate);
+      const giftWithPurchase = isGiftWithPurchase(set);
+
+      // GWP sets get only the Gift With Purchase badge.
+      // Brickset may list an exit date for a promotion even though the set can return later.
+      if (giftWithPurchase) {
+        return `
+          <div class="retirement-status gwp">Gift With Purchase</div>
+          <div class="retirement-date">&nbsp;</div>
+        `;
+      }
+
+      if (status === "retiringSoon") {
+        return `
+          <div class="retirement-status retiring-soon">Retiring Soon!</div>
+          ${formattedDate ? `<div class="retirement-date"><strong>Expected Exit:</strong> ${escapeHtml(formattedDate)}</div>` : ""}
+        `;
+      }
+
+      if (status === "retired") {
+        return `
+          <div class="retirement-status retired">Retired</div>
+          ${formattedDate ? `<div class="retirement-date"><strong>Retired:</strong> ${escapeHtml(formattedDate)}</div>` : ""}
+        `;
+      }
+
+      if (formattedDate) {
+        return `
+          <div class="retirement-status placeholder" aria-hidden="true">Retiring Soon!</div>
+          <div class="retirement-date"><strong>Expected Exit:</strong> ${escapeHtml(formattedDate)}</div>
+        `;
+      }
+
+      return `
+        <div class="retirement-status placeholder" aria-hidden="true">Retiring Soon!</div>
+        <div class="retirement-date">&nbsp;</div>
+      `;
+    }
+
+    function renderSets(sets) {
+      const list = document.getElementById("lego-sets");
+      list.innerHTML = "";
+
+      sets.forEach(set => {
+        const price = getUSRetailPrice(set);
+        const pieces = Number(set.pieces ?? 0);
+        const year = Number(set.year ?? 0);
+        const theme = set.theme ?? "Unknown";
+        const name = set.name ?? "Unnamed Set";
+        const imageURL = set.image || "";
+        const bricksetURL = set.bricksetURL || "";
+
+        const item = document.createElement("li");
+        item.className = "lego-set";
+
+        const imageHtml = imageURL
+          ? `<img src="${escapeHtml(imageURL)}" alt="${escapeHtml(name)}" loading="lazy">`
+          : `<span class="image-placeholder">No Image Available</span>`;
+
+        const nameHtml = bricksetURL
+          ? `<a href="${escapeHtml(bricksetURL)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>`
+          : escapeHtml(name);
+
+        item.innerHTML = `
+          <div class="image-wrap">${imageHtml}</div>
+          <div class="set-info">
+            <div class="set-meta-top">
+              <span class="theme-pill">${escapeHtml(theme)}</span>
+              <span class="year">${escapeHtml(year)}</span>
+            </div>
+
+            <div class="set-name">${nameHtml}</div>
+            <div class="set-number">Set #${escapeHtml(set.number)}</div>
+            ${set.launchDate ? `<div class="retirement-date"><strong>Launch Date:</strong> ${escapeHtml(formatRetirementDate(set.launchDate))}</div>` : ""}
+            ${getRetirementHtml(set)}
+
+            <div class="set-stats">
+              <div class="set-stat">
+                <span class="set-stat-label">Pieces</span>
+                <span class="set-stat-value">${numberFormatter.format(pieces)}</span>
+              </div>
+              <div class="set-stat">
+                <span class="set-stat-label">MSRP</span>
+                <span class="set-stat-value">${formatRetailPrice(set)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        list.appendChild(item);
+      });
+    }
+
+    function updateSummary(sets) {
+      let totalSets = 0;
+      let totalPieces = 0;
+      let totalMSRP = 0;
+
+      sets.forEach(set => {
+        const qty = getQuantityOwned(set);
+        totalSets += qty;
+        totalPieces += Number(set.pieces ?? 0) * qty;
+        totalMSRP += (getUSRetailPrice(set) ?? 0) * qty;
+      });
+
+      document.getElementById("summary-sets").textContent =
+        numberFormatter.format(totalSets);
+
+      document.getElementById("summary-pieces").textContent =
+        numberFormatter.format(totalPieces);
+
+      document.getElementById("summary-msrp").textContent =
+        `$${moneyFormatter.format(totalMSRP)}`;
+    }
+
+    function renderCollectionDetails(sets) {
+      const releaseYears = {};
+      const themes = {};
+      const retirementStatuses = {
+        active: 0,
+        retiringSoon: 0,
+        retired: 0,
+        giftWithPurchase: 0
+      };
+
+      sets.forEach(set => {
+        const qty = getQuantityOwned(set);
+        const year = String(set.year ?? "Unknown");
+        const theme = set.theme ?? "Unknown";
+
+        releaseYears[year] = (releaseYears[year] || 0) + qty;
+        themes[theme] = (themes[theme] || 0) + qty;
+
+        if (isGiftWithPurchase(set)) {
+          retirementStatuses.giftWithPurchase += qty;
+        } else {
+          const retirementStatus = getRetirementStatus(set);
+          if (Object.hasOwn(retirementStatuses, retirementStatus)) {
+            retirementStatuses[retirementStatus] += qty;
+          } else {
+            retirementStatuses.active += qty;
+          }
+        }
+      });
+
+      const yearsContainer = document.getElementById("release-years");
+      yearsContainer.innerHTML = Object.entries(releaseYears)
+        .sort((a, b) => Number(b[0]) - Number(a[0]))
+        .map(([year, count]) => `
+          <div class="detail-row">
+            <span>${escapeHtml(year)}</span>
+            <strong>${numberFormatter.format(count)}</strong>
+          </div>
+        `)
+        .join("");
+
+      const themesContainer = document.getElementById("themes");
+      themesContainer.innerHTML = Object.entries(themes)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([theme, count]) => `
+          <div class="detail-row">
+            <span>${escapeHtml(theme)}</span>
+            <strong>${numberFormatter.format(count)}</strong>
+          </div>
+        `)
+        .join("");
+
+      const retirementContainer = document.getElementById("retirement-status");
+      retirementContainer.innerHTML = `
+        <div class="detail-row">
+          <span>Active</span>
+          <strong>${numberFormatter.format(retirementStatuses.active)}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Retiring Soon</span>
+          <strong>${numberFormatter.format(retirementStatuses.retiringSoon)}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Retired</span>
+          <strong>${numberFormatter.format(retirementStatuses.retired)}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Gift With Purchase</span>
+          <strong>${numberFormatter.format(retirementStatuses.giftWithPurchase)}</strong>
+        </div>
+      `;
+    }
+
+    function updateDirectionButton() {
+      const button = document.getElementById("sort-direction-button");
+
+      const textSort = activeSortKey === "name" || activeSortKey === "theme";
+
+      if (textSort) {
+        button.textContent =
+          activeSortDirection === "asc" ? "A → Z" : "Z → A";
+      } else {
+        button.textContent =
+          activeSortDirection === "asc" ? "Low → High" : "High → Low";
+      }
+    }
+
+    function toggleView() {
+      const list = document.getElementById("lego-sets");
+      const button = document.getElementById("view-toggle-button");
+
+      if (list.classList.contains("grid-view")) {
+        list.classList.remove("grid-view");
+        list.classList.add("list-view");
+        button.textContent = "Switch to Grid View";
+      } else {
+        list.classList.remove("list-view");
+        list.classList.add("grid-view");
+        button.textContent = "Switch to List View";
+      }
+    }
+
+    function updateTimestamp(updated) {
+      const timestamp = document.getElementById("timestamp");
+
+      if (!updated) {
+        timestamp.textContent = "Collection data loaded";
+        return;
+      }
+
+      const date = new Date(updated);
+
+      if (Number.isNaN(date.getTime())) {
+        timestamp.textContent = "Collection data loaded";
+        return;
+      }
+
+      timestamp.textContent = `Updated ${date.toLocaleString()}`;
+    }
+
+    function displayError(message) {
+      const alertBox = document.getElementById("customAlert");
+      alertBox.textContent = message;
+      alertBox.style.display = "block";
+    }
+
+    document.getElementById("sort-select").addEventListener("change", event => {
+      activeSortKey = event.target.value;
+
+      if (activeSortKey === "pieces" || activeSortKey === "price" || activeSortKey === "release") {
+        activeSortDirection = "desc";
+      } else {
+        activeSortDirection = "asc";
+      }
+
+      sortAndRender();
+    });
+
+    document.getElementById("status-filter").addEventListener("change", event => {
+      activeStatusFilter = event.target.value;
+      sortAndRender();
+    });
+
+    document.getElementById("sort-direction-button").addEventListener("click", () => {
+      activeSortDirection = activeSortDirection === "asc" ? "desc" : "asc";
+      sortAndRender();
+    });
+
+    document.getElementById("view-toggle-button").addEventListener("click", toggleView);
+
+    document.getElementById("scrollToBottomButton").addEventListener("click", () => {
+      document.getElementById("collection-details").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+
+    function setInitialLayout() {
+      const mobileBreakpoint = 700;
+      const setsElement = document.getElementById("lego-sets");
+      const toggleButton = document.getElementById("view-toggle-button");
+
+      if (window.innerWidth <= mobileBreakpoint) {
+        setsElement.classList.remove("grid-view");
+        setsElement.classList.add("list-view");
+        toggleButton.textContent = "Switch to Grid View";
+      }
+    }
+
+    setInitialLayout();
+    loadCollection();
+  </script>
+</body>
+</html>
